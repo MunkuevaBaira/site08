@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Интерактивный конспект: устройство веб-разработки, публикация, fetch/API/JSON, ошибки, компоненты и доступность. Тест из 20 вопросов.">
+<title>Конспект · Веб-разработка и компоненты</title>
+<style>
+:root{
+--ink:#070b16;--ink2:#0b1122;--surface:#101a31;--line:#26375c;--line2:#33487a;
+--cyan:#00e5ff;--blue:#4d7cff;--magenta:#ff2d95;--lime:#a3ff12;--amber:#ffb020;
+--red:#ff4757;--green:#2ee59d;--text:#eef3ff;--muted:#9aa7c7;--dim:#6c7a9e;
+--grad:linear-gradient(120deg,var(--cyan),var(--blue) 38%,var(--magenta) 72%,var(--amber));
+--r-lg:24px;--r-md:16px;--r-sm:10px;--shadow:0 18px 60px rgba(0,0,0,.45);
+--nav-h:76px;--mono:"JetBrains Mono","Fira Code",Consolas,monospace;
+--sans:Inter,"Segoe UI",system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--nav-h) + 18px)}
+body{font-family:var(--sans);background:var(--ink);color:var(--text);line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:var(--magenta);color:#fff}
+::-webkit-scrollbar{width:12px}
+::-webkit-scrollbar-track{background:var(--ink2)}
+::-webkit-scrollbar-thumb{background:linear-gradient(var(--blue),var(--magenta));border-radius:99px;border:3px solid var(--ink2)}
+a{color:inherit}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+code,pre{font-family:var(--mono)}
+
+.bg{position:fixed;inset:0;z-index:-2;overflow:hidden;pointer-events:none}
+.bg::before{content:"";position:absolute;inset:0;background:
+radial-gradient(60% 50% at 12% 8%,rgba(0,229,255,.16),transparent 60%),
+radial-gradient(50% 45% at 88% 18%,rgba(255,45,149,.14),transparent 60%),
+radial-gradient(55% 55% at 50% 92%,rgba(163,255,18,.10),transparent 62%),
+linear-gradient(180deg,var(--ink),var(--ink2) 55%,var(--ink))}
+.blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:.5;animation:drift 22s ease-in-out infinite alternate}
+.blob.b1{width:520px;height:520px;left:-140px;top:6%;background:radial-gradient(circle,rgba(0,229,255,.5),transparent 68%)}
+.blob.b2{width:460px;height:460px;right:-120px;top:24%;background:radial-gradient(circle,rgba(255,45,149,.45),transparent 68%);animation-delay:-7s}
+.blob.b3{width:560px;height:560px;left:32%;bottom:-220px;background:radial-gradient(circle,rgba(77,124,255,.42),transparent 68%);animation-delay:-13s}
+@keyframes drift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(60px,-46px,0) scale(1.12)}}
+.grain{position:fixed;inset:0;z-index:-1;opacity:.055;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.9'/%3E%3C/svg%3E")}
+.particles{position:absolute;inset:0}
+.particle{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--cyan);opacity:.5;animation:float linear infinite}
+@keyframes float{from{transform:translateY(105vh) scale(.6)}to{transform:translateY(-12vh) scale(1.1)}}
+
+.nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);z-index:100;display:flex;align-items:center;gap:22px;padding:0 clamp(16px,4vw,44px);background:rgba(7,11,22,.72);backdrop-filter:blur(18px);border-bottom:1px solid rgba(51,72,122,.55)}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;flex:0 0 auto}
+.brand-mark{width:40px;height:40px;border-radius:12px;background:var(--grad);display:grid;place-items:center;font-weight:900;color:#06101c;box-shadow:0 0 26px rgba(0,229,255,.35)}
+.brand-text{display:flex;flex-direction:column;line-height:1.1}
+.brand-text b{font-size:.95rem;letter-spacing:.04em}
+.brand-text span{font-size:.72rem;color:var(--muted)}
+.nav-links{display:flex;gap:4px;margin-left:auto;align-items:center}
+.nav-links a{text-decoration:none;font-size:.86rem;color:var(--muted);padding:9px 13px;border-radius:99px;transition:.2s;white-space:nowrap;border:1px solid transparent}
+.nav-links a:hover{color:var(--text);background:rgba(77,124,255,.14)}
+.nav-links a.active{color:#06101c;background:var(--grad);font-weight:700;border-color:transparent}
+.nav-cta{margin-left:8px;padding:10px 16px;border-radius:99px;border:none;font-weight:800;font-size:.84rem;background:linear-gradient(120deg,var(--lime),var(--cyan));color:#06101c;text-decoration:none;box-shadow:0 0 24px rgba(163,255,18,.25)}
+.progress-line{position:absolute;left:0;bottom:-1px;height:2px;width:0;background:var(--grad);box-shadow:0 0 12px var(--cyan)}
+.menu-btn{display:none;margin-left:auto;background:rgba(22,34,61,.9);border:1px solid var(--line2);border-radius:12px;width:44px;height:44px}
+.menu-btn span,.menu-btn span::before,.menu-btn span::after{display:block;width:20px;height:2px;background:var(--text);margin:0 auto;position:relative;transition:.25s}
+.menu-btn span::before,.menu-btn span::after{content:"";position:absolute;left:0}
+.menu-btn span::before{top:-6px}.menu-btn span::after{top:6px}
+.menu-btn[aria-expanded="true"] span{background:transparent}
+.menu-btn[aria-expanded="true"] span::before{transform:translateY(6px) rotate(45deg)}
+.menu-btn[aria-expanded="true"] span::after{transform:translateY(-6px) rotate(-45deg)}
+
+main{padding-top:var(--nav-h)}
+.wrap{width:min(1180px,calc(100% - 36px));margin:0 auto}
+section{padding:clamp(64px,9vw,116px) 0;position:relative}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);margin-bottom:16px}
+.eyebrow::before{content:"";width:26px;height:2px;background:var(--grad);border-radius:2px}
+h1,h2,h3{line-height:1.12;letter-spacing:-.025em}
+h1{font-size:clamp(2.5rem,6.4vw,5.1rem);font-weight:900}
+h2{font-size:clamp(1.9rem,4vw,3rem);font-weight:850;margin-bottom:14px}
+h3{font-size:1.18rem;font-weight:750}
+.lead{font-size:clamp(1.02rem,1.6vw,1.2rem);color:var(--muted);max-width:760px}
+.grad-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.section-head{margin-bottom:38px}
+.section-head .lead{margin-top:8px}
+
+.hero{min-height:calc(100vh - var(--nav-h));display:flex;align-items:center;padding-top:34px}
+.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:46px;align-items:center}
+.hero h1{margin-bottom:22px}
+.hero .lead{font-size:clamp(1.05rem,1.8vw,1.28rem);margin-bottom:30px}
+.hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:36px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:14px 24px;border-radius:14px;border:1px solid transparent;font-weight:750;text-decoration:none;transition:transform .18s,box-shadow .18s;position:relative}
+.btn:hover{transform:translateY(-2px)}
+.btn-primary{background:var(--grad);color:#06101c;box-shadow:0 10px 34px rgba(0,229,255,.24)}
+.btn-ghost{background:rgba(22,34,61,.7);border-color:var(--line2);color:var(--text)}
+.btn-ghost:hover{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,.12)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.hero-stats{display:flex;gap:12px;flex-wrap:wrap}
+.stat{background:rgba(16,26,49,.72);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 18px;min-width:132px}
+.stat b{display:block;font-size:1.5rem;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat span{font-size:.8rem;color:var(--muted)}
+.hero-card{background:linear-gradient(160deg,rgba(22,34,61,.92),rgba(11,17,34,.94));border:1px solid var(--line2);border-radius:var(--r-lg);padding:26px;box-shadow:var(--shadow)}
+.terminal{background:#060a14;border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden}
+.terminal-bar{display:flex;align-items:center;gap:7px;padding:11px 14px;background:rgba(22,34,61,.8);border-bottom:1px solid var(--line)}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot.r{background:var(--red)}.dot.a{background:var(--amber)}.dot.g{background:var(--green)}
+.terminal-title{margin-left:8px;font-family:var(--mono);font-size:.74rem;color:var(--dim)}
+.terminal-body{padding:18px;font-family:var(--mono);font-size:.82rem;line-height:1.85;color:#cfe0ff;min-height:250px}
+.tline{opacity:0;transform:translateY(6px);animation:tin .4s forwards}
+.tline:nth-child(1){animation-delay:.2s}.tline:nth-child(2){animation-delay:.5s}.tline:nth-child(3){animation-delay:.8s}
+.tline:nth-child(4){animation-delay:1.1s}.tline:nth-child(5){animation-delay:1.4s}.tline:nth-child(6){animation-delay:1.7s}
+.tline:nth-child(7){animation-delay:2s}
+@keyframes tin{to{opacity:1;transform:none}}
+.tk{color:var(--magenta)}.tf{color:var(--cyan)}.ts{color:var(--lime)}.tc{color:var(--dim)}
+.cursor{display:inline-block;width:8px;height:15px;background:var(--lime);vertical-align:-2px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.hero-note{margin-top:18px;font-size:.85rem;color:var(--muted);display:flex;gap:10px;align-items:flex-start}
+.hero-note b{color:var(--lime)}
+
+.card{background:linear-gradient(160deg,rgba(22,34,61,.78),rgba(13,20,38,.86));border:1px solid var(--line);border-radius:var(--r-lg);padding:24px;box-shadow:0 10px 40px rgba(0,0,0,.22)}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:99px;font-size:.72rem;font-weight:750;border:1px solid}
+.badge.lime{color:var(--lime);border-color:rgba(163,255,18,.4);background:rgba(163,255,18,.09)}
+
+.spec-layout{display:grid;grid-template-columns:.95fr 1.05fr;gap:22px;align-items:start}
+.spec-list{display:flex;flex-direction:column;gap:12px}
+.spec-item{width:100%;text-align:left;background:rgba(16,26,49,.7);border:1px solid var(--line);border-radius:var(--r-md);padding:16px 18px;display:flex;gap:14px;align-items:center;transition:.2s}
+.spec-item:hover{border-color:var(--line2);transform:translateX(4px)}
+.spec-item.active{border-color:var(--cyan);background:linear-gradient(100deg,rgba(0,229,255,.12),rgba(255,45,149,.07));box-shadow:0 0 0 3px rgba(0,229,255,.1)}
+.spec-ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:1.25rem;flex:0 0 auto;background:rgba(7,11,22,.6);border:1px solid var(--line2)}
+.spec-item b{display:block;font-size:.98rem}
+.spec-item small{display:block;color:var(--muted);font-size:.78rem;margin-top:2px}
+.spec-detail{position:sticky;top:calc(var(--nav-h) + 22px)}
+.spec-detail h3{font-size:1.5rem;margin-bottom:6px}
+.spec-detail p{color:var(--muted);font-size:.94rem}
+.skill-tags{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}
+.tag{padding:6px 11px;border-radius:8px;background:rgba(7,11,22,.6);border:1px solid var(--line2);font-family:var(--mono);font-size:.74rem;color:#cfe0ff}
+.meter{margin:14px 0}
+.meter-label{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-bottom:6px}
+.meter-track{height:8px;border-radius:99px;background:rgba(7,11,22,.7);border:1px solid var(--line);overflow:hidden}
+.meter-fill{height:100%;border-radius:99px;background:var(--grad);width:0;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.spec-meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.meta-box{background:rgba(7,11,22,.5);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px}
+.meta-box span{display:block;font-size:.72rem;color:var(--dim);text-transform:uppercase;letter-spacing:.08em}
+.meta-box b{font-size:.92rem;margin-top:3px;display:block}
+
+.lecture-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.lecture-card{background:rgba(16,26,49,.72);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px}
+.lecture-card h3{margin:12px 0 8px;font-size:1.1rem}
+.lecture-card p{color:var(--muted);font-size:.88rem}
+.lecture-card ul{list-style:none;display:flex;flex-direction:column;gap:7px;margin-top:12px}
+.lecture-card li{font-size:.84rem;color:#cfe0ff;display:flex;gap:8px}
+.lecture-card li::before{content:"▸";color:var(--cyan);flex:0 0 auto}
+.lecture-date{font-family:var(--mono);font-size:.72rem;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
+.formula{background:#060a14;border:1px solid var(--line);border-radius:var(--r-sm);padding:14px;font-family:var(--mono);font-size:.78rem;color:var(--lime);margin-top:12px;overflow:auto;white-space:pre-wrap}
+
+.lab{display:grid;grid-template-columns:1.05fr .95fr;gap:22px;align-items:start}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.tab{padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(16,26,49,.7);color:var(--muted);font-weight:700;font-size:.86rem;transition:.2s}
+.tab:hover{color:var(--text);border-color:var(--line2)}
+.tab.active{color:#06101c;background:var(--grad);border-color:transparent}
+.code-panel{background:#060a14;border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden}
+.code-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:rgba(22,34,61,.8);border-bottom:1px solid var(--line)}
+.code-head span{font-family:var(--mono);font-size:.74rem;color:var(--dim)}
+.copy-btn{background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.35);color:var(--cyan);border-radius:8px;padding:6px 11px;font-size:.74rem;font-weight:700}
+.copy-btn:hover{background:rgba(0,229,255,.2)}
+pre{padding:18px;font-size:.78rem;line-height:1.75;color:#cfe0ff;overflow:auto;max-height:340px;white-space:pre-wrap;word-break:break-word}
+
+.sandbox{display:flex;flex-direction:column;gap:18px}
+.preview-stage{min-height:210px;border-radius:var(--r-md);border:1px dashed var(--line2);background:
+linear-gradient(rgba(38,55,92,.28) 1px,transparent 1px),
+linear-gradient(90deg,rgba(38,55,92,.28) 1px,transparent 1px),
+radial-gradient(70% 70% at 50% 40%,rgba(77,124,255,.14),transparent 70%);
+background-size:26px 26px,26px 26px,auto;display:grid;place-items:center;padding:26px;position:relative}
+.preview-stage::after{content:"live preview";position:absolute;top:10px;left:12px;font-family:var(--mono);font-size:.66rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase}
+.demo-btn{border:none;font-weight:800;display:inline-flex;align-items:center;gap:10px;transition:transform .15s,box-shadow .2s}
+.demo-btn:not(:disabled):hover{transform:translateY(-3px) scale(1.02)}
+.demo-btn:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.4)}
+.demo-badge{min-width:22px;height:22px;padding:0 7px;border-radius:99px;background:rgba(6,16,28,.35);display:grid;place-items:center;font-size:.72rem;font-weight:900}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.control{background:rgba(7,11,22,.5);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px}
+.control label{display:block;font-size:.74rem;color:var(--muted);margin-bottom:7px;font-weight:650}
+.control input[type=text],.control select{width:100%;background:rgba(11,17,34,.9);border:1px solid var(--line2);border-radius:8px;padding:8px 10px;font-size:.85rem}
+.control input:focus,.control select:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,.14)}
+.stepper{display:flex;align-items:center;gap:8px}
+.stepper button{width:32px;height:32px;border-radius:8px;border:1px solid var(--line2);background:rgba(22,34,61,.9);font-weight:900}
+.stepper button:hover{border-color:var(--cyan);color:var(--cyan)}
+.stepper output{flex:1;text-align:center;font-family:var(--mono);font-weight:800;color:var(--lime)}
+input[type=range]{width:100%;accent-color:var(--magenta);height:6px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.switch{position:relative;width:46px;height:26px;flex:0 0 auto}
+.switch input{position:absolute;opacity:0;width:100%;height:100%;cursor:pointer}
+.switch i{position:absolute;inset:0;border-radius:99px;background:rgba(38,55,92,.9);border:1px solid var(--line2);transition:.2s}
+.switch i::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--dim);transition:.2s}
+.switch input:checked + i{background:linear-gradient(120deg,var(--cyan),var(--magenta));border-color:transparent}
+.switch input:checked + i::after{left:23px;background:#fff}
+.control-actions{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap}
+.mini-btn{padding:9px 14px;border-radius:10px;border:1px solid var(--line2);background:rgba(22,34,61,.9);font-size:.8rem;font-weight:700}
+.mini-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.mini-btn.accent{background:linear-gradient(120deg,var(--lime),var(--cyan));color:#06101c;border-color:transparent}
+
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:26px}
+.flow-step{background:rgba(16,26,49,.72);border:1px solid var(--line);border-radius:var(--r-md);padding:18px 14px;text-align:center;cursor:pointer;transition:.2s}
+.flow-step:hover{transform:translateY(-4px);border-color:var(--line2)}
+.flow-step.active{border-color:var(--magenta);background:linear-gradient(150deg,rgba(255,45,149,.13),rgba(77,124,255,.08))}
+.flow-num{width:30px;height:30px;border-radius:50%;background:var(--grad);color:#06101c;font-weight:900;display:grid;place-items:center;margin:0 auto 10px;font-size:.85rem}
+.flow-step b{display:block;font-size:.86rem;margin-bottom:4px}
+.flow-step small{color:var(--muted);font-size:.72rem;line-height:1.4;display:block}
+.flow-detail{margin-top:18px}
+.flow-detail h3{margin-bottom:8px}
+.flow-detail p{color:var(--muted);font-size:.92rem}
+.flow-code{margin-top:14px;background:#060a14;border:1px solid var(--line);border-radius:var(--r-sm);padding:14px;font-family:var(--mono);font-size:.76rem;color:var(--lime);overflow:auto;white-space:pre-wrap}
+
+.ladder{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.rung{background:rgba(16,26,49,.72);border:1px solid var(--line);border-radius:var(--r-md);padding:20px 16px;text-align:center;cursor:pointer;transition:.22s}
+.rung:hover{transform:translateY(-4px);border-color:var(--line2)}
+.rung.active{border-color:var(--amber);background:linear-gradient(160deg,rgba(255,176,32,.12),rgba(255,45,149,.06))}
+.rung b{display:block;font-size:1.05rem;margin-bottom:4px}
+.rung small{color:var(--muted);font-size:.76rem}
+.rung .lvl{font-family:var(--mono);font-size:.68rem;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:8px}
+.career-detail{display:grid;grid-template-columns:1.1fr .9fr;gap:20px}
+.career-detail ul{list-style:none;display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.career-detail li{display:flex;gap:10px;align-items:flex-start;font-size:.9rem;color:#cfe0ff}
+.career-detail li::before{content:"▹";color:var(--lime);font-weight:900;flex:0 0 auto}
+.salary{background:rgba(7,11,22,.5);border:1px solid var(--line);border-radius:var(--r-md);padding:18px}
+.salary h4{font-size:.8rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
+.salary-band{height:14px;border-radius:99px;background:linear-gradient(90deg,var(--blue),var(--cyan),var(--lime),var(--amber),var(--magenta));position:relative;margin:16px 0 8px}
+.salary-marker{position:absolute;top:-6px;width:4px;height:26px;background:#fff;border-radius:4px;box-shadow:0 0 12px rgba(255,255,255,.7);transition:left .5s}
+.salary-labels{display:flex;justify-content:space-between;font-size:.72rem;color:var(--dim);font-family:var(--mono)}
+.salary-value{font-size:1.6rem;font-weight:900;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin-top:14px}
+.salary-note{font-size:.76rem;color:var(--muted);margin-top:6px}
+
+.portfolio-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.idea-box{background:linear-gradient(150deg,rgba(163,255,18,.09),rgba(0,229,255,.06));border:1px solid rgba(163,255,18,.3);border-radius:var(--r-lg);padding:26px}
+.idea-box h3{font-size:1.35rem;margin:12px 0 8px}
+.idea-box p{color:var(--muted);font-size:.92rem;margin-bottom:16px}
+.idea-stack{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.checklist{display:flex;flex-direction:column;gap:11px}
+.check{display:flex;gap:12px;align-items:flex-start;background:rgba(7,11,22,.4);border:1px solid var(--line);border-radius:var(--r-sm);padding:13px}
+.check input{margin-top:4px;accent-color:var(--lime);width:17px;height:17px;flex:0 0 auto}
+.check b{display:block;font-size:.9rem}
+.check small{display:block;color:var(--muted);font-size:.78rem;margin-top:2px}
+.check.done{border-color:rgba(46,229,157,.4);background:rgba(46,229,157,.06)}
+.check.done b{text-decoration:line-through;color:var(--muted)}
+
+.quiz-shell{max-width:820px;margin:0 auto}
+.quiz-top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.quiz-progress{flex:1;min-width:200px;height:8px;border-radius:99px;background:rgba(7,11,22,.7);border:1px solid var(--line);overflow:hidden}
+.quiz-progress i{display:block;height:100%;background:var(--grad);width:0;transition:width .4s}
+.quiz-count{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.quiz-card{min-height:380px}
+.quiz-q{font-size:1.3rem;font-weight:750;margin-bottom:20px;line-height:1.35}
+.quiz-options{display:flex;flex-direction:column;gap:11px}
+.quiz-opt{width:100%;text-align:left;padding:15px 18px;border-radius:var(--r-md);border:1px solid var(--line);background:rgba(16,26,49,.7);transition:.18s;display:flex;gap:12px;align-items:center;font-size:.94rem}
+.quiz-opt:hover:not(:disabled){border-color:var(--cyan);background:rgba(0,229,255,.07);transform:translateX(4px)}
+.quiz-opt .key{width:26px;height:26px;border-radius:7px;background:rgba(7,11,22,.7);border:1px solid var(--line2);display:grid;place-items:center;font-family:var(--mono);font-size:.76rem;font-weight:800;flex:0 0 auto}
+.quiz-opt.correct{border-color:var(--green);background:rgba(46,229,157,.12)}
+.quiz-opt.correct .key{background:var(--green);color:#06101c;border-color:transparent}
+.quiz-opt.wrong{border-color:var(--red);background:rgba(255,71,87,.12)}
+.quiz-opt.wrong .key{background:var(--red);color:#fff;border-color:transparent}
+.quiz-opt:disabled{cursor:default}
+.quiz-explain{margin-top:18px;padding:15px;border-radius:var(--r-sm);border:1px solid var(--line2);background:rgba(77,124,255,.08);font-size:.88rem;color:#cfe0ff;display:none}
+.quiz-explain.show{display:block}
+.quiz-actions{display:flex;justify-content:space-between;gap:12px;margin-top:20px;flex-wrap:wrap}
+.quiz-result{text-align:center;padding:30px 10px}
+.result-score{font-size:4rem;font-weight:900;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1}
+.result-msg{font-size:1.15rem;margin:14px 0 8px;font-weight:750}
+.result-sub{color:var(--muted);font-size:.92rem;max-width:520px;margin:0 auto 22px}
+
+.plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:22px}
+.phase{display:flex;flex-direction:column;gap:12px}
+.phase-head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.phase-num{width:38px;height:38px;border-radius:12px;background:var(--grad);color:#06101c;font-weight:900;display:grid;place-items:center;flex:0 0 auto}
+.phase-head b{font-size:1rem}
+.phase-head small{display:block;color:var(--muted);font-size:.76rem}
+.task{display:flex;gap:11px;align-items:flex-start;background:rgba(7,11,22,.42);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px}
+.task input{margin-top:3px;accent-color:var(--cyan);width:16px;height:16px;flex:0 0 auto}
+.task label{font-size:.85rem;cursor:pointer;line-height:1.45}
+.task.done{border-color:rgba(0,229,255,.35);background:rgba(0,229,255,.06)}
+.task.done label{color:var(--muted);text-decoration:line-through}
+.plan-summary{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center}
+.plan-bar{height:14px;border-radius:99px;background:rgba(7,11,22,.7);border:1px solid var(--line);overflow:hidden;margin-top:10px}
+.plan-bar i{display:block;height:100%;background:var(--grad);width:0;transition:width .5s}
+.plan-pct{font-size:2.2rem;font-weight:900;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.plan-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+footer{border-top:1px solid var(--line);padding:44px 0 60px;background:rgba(7,11,22,.6)}
+.footer-grid{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:center}
+.footer-grid p{color:var(--muted);font-size:.86rem}
+.footer-links{display:flex;gap:16px;flex-wrap:wrap}
+.footer-links a{color:var(--muted);text-decoration:none;font-size:.84rem}
+.footer-links a:hover{color:var(--cyan)}
+.to-top{position:fixed;right:22px;bottom:22px;width:50px;height:50px;border-radius:14px;border:1px solid var(--line2);background:rgba(16,26,49,.9);backdrop-filter:blur(10px);color:var(--text);font-size:1.2rem;z-index:90;opacity:0;visibility:hidden;transition:.25s}
+.to-top.show{opacity:1;visibility:visible}
+.to-top:hover{border-color:var(--cyan);color:var(--cyan)}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.8,.2,1)}
+.reveal.in{opacity:1;transform:none}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);z-index:200;background:rgba(16,26,49,.96);border:1px solid var(--cyan);border-radius:12px;padding:12px 20px;font-size:.86rem;font-weight:650;box-shadow:0 10px 40px rgba(0,0,0,.5);opacity:0;visibility:hidden;transition:.25s}
+.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
+:focus-visible{outline:3px solid var(--amber);outline-offset:3px;border-radius:6px}
+
+@media(max-width:1024px){
+.hero-grid,.spec-layout,.lab,.career-detail,.portfolio-grid{grid-template-columns:1fr}
+.grid-2,.plan-grid,.lecture-grid{grid-template-columns:repeat(2,1fr)}
+.flow{grid-template-columns:repeat(3,1fr)}
+.ladder{grid-template-columns:repeat(2,1fr)}
+.spec-detail{position:static}
+}
+@media(max-width:760px){
+:root{--nav-h:66px}
+.menu-btn{display:grid;place-items:center}
+.nav-links{position:fixed;top:var(--nav-h);left:0;right:0;flex-direction:column;align-items:stretch;gap:6px;background:rgba(7,11,22,.97);backdrop-filter:blur(20px);padding:16px;border-bottom:1px solid var(--line2);transform:translateY(-130%);transition:transform .3s ease}
+.nav-links.open{transform:translateY(0)}
+.nav-links a{padding:13px 16px;border-radius:12px}
+.nav-cta{margin:6px 0 0;text-align:center}
+.brand-text span{display:none}
+.grid-2,.plan-grid,.controls,.spec-meta,.lecture-grid{grid-template-columns:1fr}
+.flow{grid-template-columns:1fr 1fr}
+.ladder{grid-template-columns:1fr 1fr}
+.hero{min-height:auto;padding-top:40px}
+.hero-card{padding:18px}
+.terminal-body{font-size:.74rem;padding:14px}
+.plan-summary{grid-template-columns:1fr}
+.quiz-actions{flex-direction:column}
+.quiz-actions .btn{width:100%}
+section{padding:64px 0}
+}
+@media(max-width:420px){
+.flow,.ladder{grid-template-columns:1fr}
+.hero-stats{flex-direction:column}
+.stat{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+.reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+<div class="particles" id="particles"></div>
+</div>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="nav">
+<a class="brand" href="#hero" aria-label="Конспект, на главную">
+<span class="brand-mark">∞</span>
+<span class="brand-text"><b>WEB CONSPECT</b><span>Лекции и компоненты</span></span>
+</a>
+<button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="navLinks" aria-label="Открыть меню"><span></span></button>
+<nav class="nav-links" id="navLinks" aria-label="Разделы конспекта">
+<a href="#map">Карта</a>
+<a href="#lectures">Лекции</a>
+<a href="#frameworks">Компоненты</a>
+<a href="#flow">Запрос</a>
+<a href="#career">Карьера</a>
+<a href="#quiz">Тест</a>
+<a class="nav-cta" href="#plan">План 90 дней</a>
+</nav>
+<div class="progress-line" id="progressLine"></div>
+</header>
+
+<main>
+<section class="hero" id="hero">
+<div class="wrap hero-grid">
+<div>
+<span class="eyebrow">Конспект · веб-разработка</span>
+<h1>Как устроен веб и из чего <span class="grad-text">собрать интерфейс</span></h1>
+<p class="lead">От DNS и рендеринга до компонентов, fetch и доступности. Весь пройденный материал в одном месте.</p>
+<div class="hero-actions">
+<a class="btn btn-primary" href="#lectures">К лекциям <span aria-hidden="true">→</span></a>
+<a class="btn btn-ghost" href="#quiz">Пройти тест</a>
+</div>
+<div class="hero-stats">
+<div class="stat"><b>5</b><span>лекций в конспекте</span></div>
+<div class="stat"><b>20</b><span>вопросов теста</span></div>
+<div class="stat"><b>4</b><span>компонента UI</span></div>
+</div>
+</div>
+<div class="hero-card">
+<div class="terminal">
+<div class="terminal-bar">
+<span class="dot r"></span><span class="dot a"></span><span class="dot g"></span>
+<span class="terminal-title">web-path.js</span>
+</div>
+<div class="terminal-body" aria-label="Пример кода веб-разработки">
+<div class="tline"><span class="tc">// путь от адреса до пикселя</span></div>
+<div class="tline"><span class="tk">const</span> <span class="tf">web</span> = {</div>
+<div class="tline">&nbsp;&nbsp;dns: <span class="ts">'имя → IP'</span>,</div>
+<div class="tline">&nbsp;&nbsp;request: <span class="ts">'GET /'</span>,</div>
+<div class="tline">&nbsp;&nbsp;render: [<span class="ts">'DOM'</span>, <span class="ts">'CSSOM'</span>, <span class="ts">'paint'</span>],</div>
+<div class="tline">&nbsp;&nbsp;ui: <span class="ts">'компоненты + доступность'</span></div>
+<div class="tline">}; <span class="cursor"></span></div>
+</div>
+</div>
+<p class="hero-note"><b>Главная мысль:</b> каждая технология отвечает за своё. И не забываем про клавиатуру и скринридеры.</p>
+</div>
+</div>
+</section>
+
+<section id="map">
+<div class="wrap">
+<div class="section-head reveal">
+<span class="eyebrow">01 · Карта профессии</span>
+<h2>Одна база — разные роли</h2>
+<p class="lead">Выберите направление, чтобы увидеть навыки и порог входа.</p>
+</div>
+<div class="spec-layout">
+<div class="spec-list reveal" id="specList" role="tablist" aria-label="Направления"></div>
+<article class="card spec-detail reveal" id="specDetail" aria-live="polite"></article>
+</div>
+</div>
+</section>
+
+<section id="lectures">
+<div class="wrap">
+<div class="section-head reveal">
+<span class="eyebrow">02 · Лекции</span>
+<h2>Все темы в одном месте</h2>
+<p class="lead">Пять лекций: устройство веба и рендеринг, публикация, fetch и JSON, обработка ошибок, компоненты и доступность.</p>
+</div>
+<div class="lecture-grid reveal" id="lectureGrid"></div>
+</div>
+</section>
+
+<section id="frameworks">
+<div class="wrap">
+<div class="section-head reveal">
+<span class="eyebrow">03 · Компоненты интерфейса</span>
+<h2>Один компонент — разное состояние</h2>
+<p class="lead">У компонента есть разметка, стили и логика. Меняйте параметры — превью и код обновляются мгновенно.</p>
+</div>
+<div class="lab">
+<div class="card reveal">
+<div class="tabs" id="fwTabs" role="tablist" aria-label="Варианты компонентов"></div>
+<div class="code-panel">
+<div class="code-head"><span id="codeFile">Button.jsx</span><button class="copy-btn" id="copyCode">Скопировать код</button></div>
+<pre id="codeOut" aria-live="polite"></pre>
+</div>
+</div>
+<div class="card sandbox reveal">
+<div class="preview-stage">
+<button class="demo-btn" id="demoBtn" type="button"></button>
+</div>
+<div class="controls" aria-label="Параметры компонента">
+<div class="control">
+<label for="labelInput">Текст кнопки</label>
+<input type="text" id="labelInput" value="Записаться" maxlength="28">
+</div>
+<div class="control">
+<label for="countOut">Счётчик уведомлений</label>
+<div class="stepper">
+<button type="button" id="countMinus" aria-label="Уменьшить счётчик">−</button>
+<output id="countOut">3</output>
+<button type="button" id="countPlus" aria-label="Увеличить счётчик">+</button>
+</div>
+</div>
+<div class="control">
+<label for="variantSelect">Вариант</label>
+<select id="variantSelect">
+<option value="primary">Primary · градиент</option>
+<option value="ghost">Ghost · прозрачная</option>
+<option value="danger">Danger · красная</option>
+<option value="success">Success · зелёная</option>
+</select>
+</div>
+<div class="control">
+<label for="sizeRange">Размер шрифта · <span id="sizeVal">16</span>px</label>
+<input type="range" id="sizeRange" min="12" max="24" value="16">
+</div>
+<div class="control">
+<label for="radiusRange">Скругление · <span id="radiusVal">12</span>px</label>
+<input type="range" id="radiusRange" min="0" max="28" value="12">
+</div>
+<div class="control">
+<label for="padRange">Плотность · <span id="padVal">14</span>px</label>
+<input type="range" id="padRange" min="8" max="24" value="14">
+</div>
+<div class="control toggle-row">
+<label for="badgeToggle" style="margin:0">Показывать бейдж</label>
+<span class="switch"><input type="checkbox" id="badgeToggle" checked=""><i></i></span>
+</div>
+<div class="control toggle-row">
+<label for="disabledToggle" style="margin:0">Disabled</label>
+<span class="switch"><input type="checkbox" id="disabledToggle"><i></i></span>
+</div>
+<div class="control toggle-row">
+<label for="glowToggle" style="margin:0">Свечение</label>
+<span class="switch"><input type="checkbox" id="glowToggle" checked=""><i></i></span>
+</div>
+<div class="control toggle-row">
+<label for="iconToggle" style="margin:0">Иконка</label>
+<span class="switch"><input type="checkbox" id="iconToggle" checked=""><i></i></span>
+</div>
+<div class="control-actions">
+<button class="mini-btn" id="resetSandbox" type="button">Сбросить</button>
+<button class="mini-btn" id="randomSandbox" type="button">Случайно</button>
+<button class="mini-btn accent" id="exportSandbox" type="button">Экспорт настроек</button>
+</div>
+</div>
+</div>
+</div>
+<div class="grid-2 reveal" style="margin-top:22px" id="componentCards"></div>
+</div>
+</section>
+
+<section id="flow">
+<div class="wrap">
+<div class="section-head reveal">
+<span class="eyebrow">04 · Путь запроса</span>
+<h2>Что происходит от адреса до пикселя</h2>
+<p class="lead">Нажмите на шаг, чтобы увидеть, что происходит и какой код за это отвечает.</p>
+</div>
+<div class="flow reveal" id="flowSteps" role="tablist" aria-label="Путь запроса"></div>
+<div class="flow-detail reveal" id="flowDetail"></div>
+</div>
+</section>
+
+<section id="career">
+<div class="wrap">
+<div class="section-head reveal">
+<span class="eyebrow">05 · Карьерная лестница</span>
+<h2>Junior → Middle → Senior → Lead</h2>
+<p class="lead">Уровни отличаются самостоятельностью и влиянием на продукт.</p>
+</div>
+<div class="ladder reveal" id="ladder" role="tablist" aria-label="Уровни карьеры"></div>
+<div class="career-detail reveal">
+<article class="card" id="careerCard" aria-live="polite"></article>
+<aside class="salary" aria-live="polite">
+<h4>Ориентир по доходу</h4>
+<div class="salary-band"><span class="salary-marker" id="salaryMarker"></span></div>
+<div class="salary-labels"><span>старт</span><span>рост</span><span>экспертиза</span></div>
+<div class="salary-value" id="salaryValue"></div>
+<p class="salary-note">Ориентиры условные и зависят от рынка и собеседования.</p>
+</aside>
+</div>
+</div>
+</section>
+
+<section id="portfolio">
+<div class="wrap">
+<div class="section-head reveal">
+<span class="eyebrow">06 · Портфолио</span>
+<h2>Не количество проектов, а качество решений</h2>
+<p class="lead">Важно показать, как вы думаете: структура кода, доступность, состояния и README.</p>
+</div>
+<div class="portfolio-grid">
+<div class="idea-box reveal">
+<span class="badge lime">Генератор идей</span>
+<h3 id="ideaTitle">Дашборд привычек с фильтрами</h3>
+<p id="ideaDesc">Пользователь отмечает прогресс, фильтрует записи по неделям и видит статистику.</p>
+<div class="idea-stack" id="ideaStack"></div>
+<button class="btn btn-primary" id="newIdea" type="button">Новая идея <span aria-hidden="true">↻</span></button>
+</div>
+<div class="card reveal">
+<h3 style="margin-bottom:16px">Чек-лист сильного проекта</h3>
+<div class="checklist" id="portfolioChecklist"></div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="quiz">
+<div class="wrap">
+<div class="section-head reveal" style="text-align:center">
+<span class="eyebrow" style="justify-content:center">07 · Проверка знаний</span>
+<h2>Тест по пройденным темам: 20 вопросов</h2>
+<p class="lead" style="margin-left:auto;margin-right:auto">HTML, CSS, JS, публикация, DNS, fetch, JSON, ошибки, компоненты и доступность.</p>
+</div>
+<div class="quiz-shell reveal">
+<div class="quiz-top">
+<span class="quiz-count" id="quizCount">Вопрос 1 / 20</span>
+<div class="quiz-progress"><i id="quizBar"></i></div>
+<span class="quiz-count" id="quizScore">Верно: 0</span>
+</div>
+<article class="card quiz-card" id="quizCard" aria-live="polite"></article>
+<div class="quiz-actions">
+<button class="btn btn-ghost" id="quizRestart" type="button">Начать заново</button>
+<button class="btn btn-primary" id="quizNext" type="button" disabled="">Следующий вопрос →</button>
+</div>
+</div>
+</div>
+</section>
+
+<section id="plan">
+<div class="wrap">
+<div class="section-head reveal">
+<span class="eyebrow">08 · План развития</span>
+<h2>90 дней до уверенного Junior</h2>
+<p class="lead">Отмечайте выполненное — прогресс сохраняется в браузере.</p>
+</div>
+<div class="plan-grid reveal" id="planGrid"></div>
+<div class="card plan-summary reveal">
+<div>
+<h3>Общий прогресс</h3>
+<p style="color:var(--muted);font-size:.88rem;margin-top:4px">Пройдено <span id="planDone">0</span> из <span id="planTotal">0</span> задач</p>
+<div class="plan-bar"><i id="planBar"></i></div>
+</div>
+<div style="text-align:right">
+<div class="plan-pct" id="planPct">0%</div>
+<div class="plan-actions" style="margin-top:12px;justify-content:flex-end">
+<button class="mini-btn" id="planReset" type="button">Сбросить</button>
+<button class="mini-btn accent" id="planExport" type="button">Скачать план</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+
+<footer>
+<div class="wrap footer-grid">
+<div>
+<p><b style="color:var(--text)">Конспект · веб-разработка и компоненты</b></p>
+<p style="margin-top:6px">Устройство веба, публикация, fetch/API/JSON, ошибки, компоненты и доступность.</p>
+</div>
+<div class="footer-links">
+<a href="#hero">В начало</a>
+<a href="#lectures">Лекции</a>
+<a href="#frameworks">Компоненты</a>
+<a href="#quiz">Тест</a>
+<a href="#plan">План</a>
+</div>
+</div>
+</footer>
+
+<button class="to-top" id="toTop" aria-label="Прокрутить наверх">↑</button>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+const clamp=(n,min,max)=>Math.max(min,Math.min(n,max));
+
+/* particles */
+const particles=$("#particles");
+for(let i=0;i<26;i++){
+const p=document.createElement("span");
+p.className="particle";
+p.style.left=Math.random()*100+"%";
+p.style.animationDuration=(14+Math.random()*22)+"s";
+p.style.animationDelay=(-Math.random()*30)+"s";
+p.style.background=["var(--cyan)","var(--magenta)","var(--lime)","var(--blue)"][i%4];
+p.style.opacity=(.25+Math.random()*.4).toFixed(2);
+particles.appendChild(p);
+}
+
+/* toast */
+const toast=$("#toast");let toastTimer;
+function showToast(msg){
+toast.textContent=msg;toast.classList.add("show");
+clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove("show"),2200);
+}
+
+/* nav */
+const menuBtn=$("#menuBtn"),navLinks=$("#navLinks"),progressLine=$("#progressLine"),toTop=$("#toTop");
+function closeMenu(){navLinks.classList.remove("open");menuBtn.setAttribute("aria-expanded","false");menuBtn.setAttribute("aria-label","Открыть меню");}
+menuBtn.addEventListener("click",()=>{
+const open=navLinks.classList.toggle("open");
+menuBtn.setAttribute("aria-expanded",String(open));
+menuBtn.setAttribute("aria-label",open?"Закрыть меню":"Открыть меню");
+});
+$$(".nav-links a").forEach(a=>a.addEventListener("click",closeMenu));
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeMenu();});
+
+const sections=$$("main section[id]");
+const navMap=new Map($$(".nav-links a").map(a=>[a.getAttribute("href").slice(1),a]));
+function onScroll(){
+const y=window.scrollY;
+const h=document.documentElement.scrollHeight-window.innerHeight;
+progressLine.style.width=(h>0?(y/h)*100:0)+"%";
+toTop.classList.toggle("show",y>600);
+let current="";
+for(const sec of sections){if(y>=sec.offsetTop-140)current=sec.id;}
+navMap.forEach((a,id)=>a.classList.toggle("active",id===current));
+}
+window.addEventListener("scroll",onScroll,{passive:true});
+onScroll();
+toTop.addEventListener("click",()=>window.scrollTo({top:0,behavior:"smooth"}));
+
+/* reveal */
+const revealEls=$$(".reveal");
+if("IntersectionObserver" in window){
+const io=new IntersectionObserver(entries=>{
+entries.forEach(en=>{if(en.isIntersecting){en.target.classList.add("in");io.unobserve(en.target);}});
+},{threshold:.12,rootMargin:"0px 0px -40px 0px"});
+revealEls.forEach(el=>io.observe(el));
+}else{revealEls.forEach(el=>el.classList.add("in"));}
+
+/* ============ SPECS ============ */
+const specs=[
+{id:"layout",icon:"🧱",title:"Верстальщик",short:"HTML + CSS, адаптив, доступность",desc:"Превращает макет в семантичную, адаптивную и доступную вёрстку. Отвечает за кроссбраузерность и базовую оптимизацию.",skills:["HTML","CSS","Flexbox/Grid","Адаптив","A11y"],meta:[["Порог входа","Базовый"],["Фокус","Разметка и стили"]],levels:[60,80,90]},
+{id:"frontend",icon:"⚡",title:"Frontend-разработчик",short:"JS, компоненты, API, сборка",desc:"Оживляет интерфейс: события, состояние, запросы к API, компоненты и сборка. Самый частый вход в профессию.",skills:["JavaScript","fetch/API","Компоненты","Сборка","Git"],meta:[["Порог входа","Средний"],["Фокус","Логика интерфейса"]],levels:[55,85,95]},
+{id:"react",icon:"⚛️",title:"React / Vue разработчик",short:"Фреймворк, состояние, роутинг",desc:"Строит интерфейсы на компонентном фреймворке: состояние, роутинг, формы, работа с серверными данными.",skills:["React/Vue","State","Router","Hooks","Тесты"],meta:[["Порог входа","Средний+"],["Фокус","Компонентные приложения"]],levels:[50,85,95]},
+{id:"a11y",icon:"♿",title:"Специалист по доступности",short:"ARIA, клавиатура, скринридеры",desc:"Следит, чтобы интерфейс работал с клавиатуры, скринридеров и при разных ограничениях. Проводит аудит и обучает команду.",skills:["ARIA","Клавиатура","Скринридеры","Аудит","Семантика"],meta:[["Порог входа","Средний"],["Фокус","Доступность"]],levels:[60,80,92]},
+{id:"perf",icon:"🚀",title:"Performance-инженер",short:"Рендеринг, загрузка, метрики",desc:"Ускоряет загрузку и отрисовку: оптимизирует критический путь, изображения, шрифты и метрики Core Web Vitals.",skills:["Рендеринг","Lighthouse","Кэш","Изображения","Метрики"],meta:[["Порог входа","Средний+"],["Фокус","Скорость"]],levels:[55,80,94]},
+{id:"lead",icon:"🧭",title:"Тимлид / Архитектор",short:"Команда, архитектура, процессы",desc:"Отвечает за архитектуру, качество и рост команды. Принимает решения о стеке и процессах разработки.",skills:["Архитектура","Ревью","Процессы","Менторство","Коммуникация"],meta:[["Порог входа","Высокий"],["Фокус","Команда и система"]],levels:[70,88,98]}
+];
+const specList=$("#specList"),specDetail=$("#specDetail");
+function renderSpec(id){
+const s=specs.find(x=>x.id===id)||specs[0];
+$$("#specList .spec-item").forEach(b=>b.classList.toggle("active",b.dataset.id===s.id));
+specDetail.innerHTML=`
+<h3>${s.title}</h3>
+<p>${s.desc}</p>
+<div class="skill-tags">${s.skills.map(k=>`<span class="tag">${k}</span>`).join("")}</div>
+${s.levels.map((v,i)=>`
+<div class="meter">
+<div class="meter-label"><span>${["База","Практика","Экспертиза"][i]}</span><span>${v}%</span></div>
+<div class="meter-track"><div class="meter-fill" style="width:${v}%"></div></div>
+</div>`).join("")}
+<div class="spec-meta">
+${s.meta.map(m=>`<div class="meta-box"><span>${m[0]}</span><b>${m[1]}</b></div>`).join("")}
+</div>`;
+}
+specs.forEach(s=>{
+const b=document.createElement("button");
+b.className="spec-item";b.dataset.id=s.id;b.type="button";b.setAttribute("role","tab");
+b.innerHTML=`<span class="spec-ico">${s.icon}</span><span><b>${s.title}</b><small>${s.short}</small></span>`;
+b.addEventListener("click",()=>renderSpec(s.id));
+specList.appendChild(b);
+});
+renderSpec("frontend");
+
+/* ============ LECTURES ============ */
+const lectures=[
+{date:"30.10.2026",title:"Как устроена веб-разработка",desc:"Фронтенд, бэкенд и инфраструктура; сайт vs веб-приложение; путь запроса и рендеринг.",points:["DNS → IP, HTTP-запрос, ответ","DOM + CSSOM → render → paint","Анимируем transform и opacity"],formula:"HTML + CSS + JS → DOM + CSSOM → render → layout → paint"},
+{date:"09.10.2026",title:"Публикация сайта",desc:"URL, хостинг, домены и DNS, HTTPS и коды состояния; публикация и Git.",points:["DNS отвечает «какой IP у имени?»","HTTPS шифрует соединение","Git помогает обновлять сайт"],formula:"URL = протокол + домен + путь + параметры"},
+{date:"16.10.2026",title:"Данные с сервера: fetch, API, JSON",desc:"Запрос и ответ, методы HTTP, JSON, промисы и async/await.",points:["fetch возвращает промис","response.json() тоже асинхронный","await — только внутри async"],formula:"const data = await response.json();"},
+{date:"23.10.2026",title:"Обработка ошибок",desc:"fetch не считает 404 ошибкой; сетевые и HTTP-ошибки; шаблон запроса и POST.",points:["Проверка response.ok обязательна","try/catch для сетевых сбоев","disabled и «Загружаю…»"],formula:"if (!response.ok) throw new Error(response.status);"},
+{date:"06.11.2026",title:"Компоненты интерфейса",desc:"Меню-бургер, модалка, слайдер и вкладки. Переиспользование и доступность.",points:["aria-expanded, aria-controls, aria-label","role=dialog, aria-modal, возврат фокуса","Всё с мышью работает и с клавиатуры"],formula:"клик → снять состояние → поставить на выбранный"}
+];
+$("#lectureGrid").innerHTML=lectures.map(l=>`
+<div class="lecture-card">
+<span class="lecture-date">${l.date}</span>
+<h3>${l.title}</h3>
+<p>${l.desc}</p>
+<ul>${l.points.map(p=>`<li>${p}</li>`).join("")}</ul>
+<div class="formula">${l.formula}</div>
+</div>`).join("");
+
+/* ============ COMPONENT CARDS ============ */
+$("#componentCards").innerHTML=[
+["Меню-бургер","Кнопка с aria-expanded, aria-controls и aria-label. Состояние хранится в атрибуте — его озвучивает скринридер.","aria-expanded: false → true"],
+["Модальное окно","Блокирует фон, закрывается по Escape и клику по фону, возвращает фокус.","role=dialog aria-modal=true"],
+["Слайдер","Лента сдвигается через translate(-100%). overflow:hidden прячет остальные слайды.","transform: translateX(-100%)"],
+["Вкладки","Активный таб ↔ активная панель. Роли tablist/tab/tabpanel, aria-selected.","role=tablist → tab → tabpanel"]
+].map(c=>`<article class="card"><h3>${c[0]}</h3><p style="color:var(--muted);font-size:.9rem;margin-top:8px">${c[1]}</p><div class="formula">${c[2]}</div></article>`).join("");
+
+/* ============ COMPONENT LAB ============ */
+const variants=[
+{id:"primary",label:"Primary",code:`<Button variant="primary">Записаться</Button>`},
+{id:"ghost",label:"Ghost",code:`<Button variant="ghost">Отмена</Button>`},
+{id:"danger",label:"Danger",code:`<Button variant="danger">Удалить</Button>`},
+{id:"success",label:"Success",code:`<Button variant="success">Готово</Button>`}
+];
+const fwTabs=$("#fwTabs"),codeOut=$("#codeOut"),codeFile=$("#codeFile"),demoBtn=$("#demoBtn");
+let currentVariant="primary";
+function buildCode(){
+const v=variants.find(x=>x.id===currentVariant);
+codeFile.textContent="Button.jsx";
+codeOut.textContent=
+`function Button({ label, variant, badge, disabled, icon }) {\n`+
+`  return (\n`+
+`    <button\n`+
+`      className={\`btn btn--\${variant}\`}\n`+
+`      disabled={disabled}\n`+
+`      aria-label={!label ? "Кнопка" : undefined}\n`+
+`    >\n`+
+`      {icon && <span aria-hidden="true">★</span>}\n`+
+`      <span>{label}</span>\n`+
+`      {badge > 0 && <span className="btn__badge">{badge}</span>}\n`+
+`    </button>\n`+
+`  );\n`+
+`}\n\n`+
+`// использование\n`+
+`${v.code}`;
+}
+variants.forEach(v=>{
+const b=document.createElement("button");
+b.className="tab"+(v.id===currentVariant?" active":"");
+b.type="button";b.textContent=v.label;
+b.addEventListener("click",()=>{
+currentVariant=v.id;
+$$("#fwTabs .tab").forEach(t=>t.classList.toggle("active",t.textContent===v.label));
+buildCode();updateDemo();
+});
+fwTabs.appendChild(b);
+});
+buildCode();
+
+const labelInput=$("#labelInput"),countOut=$("#countOut"),countMinus=$("#countMinus"),countPlus=$("#countPlus");
+const variantSelect=$("#variantSelect"),sizeRange=$("#sizeRange"),radiusRange=$("#radiusRange"),padRange=$("#padRange");
+const sizeVal=$("#sizeVal"),radiusVal=$("#radiusVal"),padVal=$("#padVal");
+const badgeToggle=$("#badgeToggle"),disabledToggle=$("#disabledToggle"),glowToggle=$("#glowToggle"),iconToggle=$("#iconToggle");
+let count=3;
+
+function updateDemo(){
+const label=labelInput.value||"Кнопка";
+const size=+sizeRange.value,radius=+radiusRange.value,pad=+padRange.value;
+sizeVal.textContent=size;radiusVal.textContent=radius;padVal.textContent=pad;
+demoBtn.textContent="";
+const styles={
+primary:{bg:"linear-gradient(120deg,var(--cyan),var(--blue))",color:"#06101c",border:"none"},
+ghost:{bg:"transparent",color:"var(--text)",border:"1px solid var(--line2)"},
+danger:{bg:"linear-gradient(120deg,var(--red),var(--magenta))",color:"#fff",border:"none"},
+success:{bg:"linear-gradient(120deg,var(--green),var(--lime))",color:"#06101c",border:"none"}
+}[currentVariant];
+demoBtn.style.background=styles.bg;
+demoBtn.style.color=styles.color;
+demoBtn.style.border=styles.border;
+demoBtn.style.fontSize=size+"px";
+demoBtn.style.borderRadius=radius+"px";
+demoBtn.style.padding=pad+"px "+(pad*1.6)+"px";
+demoBtn.style.boxShadow=glowToggle.checked?"0 10px 34px rgba(0,229,255,.3)":"none";
+demoBtn.disabled=disabledToggle.checked;
+if(iconToggle.checked){
+const s=document.createElement("span");s.textContent="★";s.setAttribute("aria-hidden","true");demoBtn.appendChild(s);
+}
+const span=document.createElement("span");span.textContent=label;demoBtn.appendChild(span);
+if(badgeToggle.checked&&count>0){
+const b=document.createElement("span");b.className="demo-badge";b.textContent=count;demoBtn.appendChild(b);
+}
+buildCode();
+}
+[labelInput,sizeRange,radiusRange,padRange,badgeToggle,disabledToggle,glowToggle,iconToggle].forEach(el=>el.addEventListener("input",updateDemo));
+variantSelect.addEventListener("change",()=>{
+currentVariant=variantSelect.value;
+$$("#fwTabs .tab").forEach(t=>t.classList.toggle("active",t.textContent.toLowerCase()===currentVariant));
+updateDemo();
+});
+countMinus.addEventListener("click",()=>{count=clamp(count-1,0,99);countOut.textContent=count;updateDemo();});
+countPlus.addEventListener("click",()=>{count=clamp(count+1,0,99);countOut.textContent=count;updateDemo();});
+$("#resetSandbox").addEventListener("click",()=>{
+labelInput.value="Записаться";count=3;countOut.textContent=3;
+variantSelect.value="primary";currentVariant="primary";
+sizeRange.value=16;radiusRange.value=12;padRange.value=14;
+badgeToggle.checked=true;disabledToggle.checked=false;glowToggle.checked=true;iconToggle.checked=true;
+$$("#fwTabs .tab").forEach(t=>t.classList.toggle("active",t.textContent==="Primary"));
+updateDemo();showToast("Настройки сброшены");
+});
+$("#randomSandbox").addEventListener("click",()=>{
+const v=variants[Math.floor(Math.random()*variants.length)];
+currentVariant=v.id;variantSelect.value=v.id;
+$$("#fwTabs .tab").forEach(t=>t.classList.toggle("active",t.textContent===v.label));
+count=Math.floor(Math.random()*10);countOut.textContent=count;
+sizeRange.value=12+Math.floor(Math.random()*13);
+radiusRange.value=Math.floor(Math.random()*29);
+padRange.value=8+Math.floor(Math.random()*17);
+updateDemo();showToast("Случайные настройки");
+});
+$("#exportSandbox").addEventListener("click",()=>{
+const data={variant:currentVariant,label:labelInput.value,count,size:+sizeRange.value,radius:+radiusRange.value,pad:+padRange.value};
+navigator.clipboard?.writeText(JSON.stringify(data,null,2)).then(()=>showToast("Настройки скопированы"),()=>showToast("Не удалось скопировать"));
+});
+$("#copyCode").addEventListener("click",()=>{
+navigator.clipboard?.writeText(codeOut.textContent).then(()=>showToast("Код скопирован"),()=>showToast("Не удалось скопировать"));
+});
+updateDemo();
+
+/* ============ FLOW ============ */
+const flow=[
+{title:"DNS",sub:"имя → IP",text:"Браузер спрашивает DNS: «какой IP у домена?» Получает адрес сервера.",code:"my-site.netlify.app → 104.198.14.52"},
+{title:"Запрос",sub:"HTTP GET",text:"Браузер устанавливает соединение и отправляет HTTP-запрос.",code:"GET / HTTP/1.1\nHost: my-site.netlify.app"},
+{title:"Ответ",sub:"200 OK",text:"Сервер находит файл и отвечает кодом состояния и телом.",code:"200 OK\nContent-Type: text/html"},
+{title:"Рендеринг",sub:"DOM + CSSOM",text:"Браузер строит DOM, CSSOM, render-дерево, layout и paint.",code:"DOM + CSSOM → render → layout → paint"},
+{title:"Данные",sub:"fetch/API",text:"Скрипты запрашивают данные через fetch, проверяют response.ok и обрабатывают ошибки.",code:"const res = await fetch(url);\nif(!res.ok) throw new Error(res.status);"}
+];
+const flowSteps=$("#flowSteps"),flowDetail=$("#flowDetail");
+function renderFlow(i){
+const f=flow[i];
+$$("#flowSteps .flow-step").forEach((b,idx)=>b.classList.toggle("active",idx===i));
+flowDetail.innerHTML=`<div class="card"><h3>${f.title} · ${f.sub}</h3><p>${f.text}</p><div class="flow-code">${f.code}</div></div>`;
+}
+flow.forEach((f,i)=>{
+const b=document.createElement("button");
+b.className="flow-step";b.type="button";b.setAttribute("role","tab");
+b.innerHTML=`<span class="flow-num">${i+1}</span><b>${f.title}</b><small>${f.sub}</small>`;
+b.addEventListener("click",()=>renderFlow(i));
+flowSteps.appendChild(b);
+});
+renderFlow(0);
+
+/* ============ CAREER ============ */
+const rungs=[
+{id:"junior",lvl:"L1",title:"Junior",short:"Учится и делает задачи по инструкции",expect:["Решает типовые задачи по чек-листу","Пишет простые компоненты","Задаёт вопросы и принимает ревью"],salary:"от 40–80 тыс.",pos:18},
+{id:"middle",lvl:"L2",title:"Middle",short:"Самостоятельно ведёт задачи",expect:["Сам разбивает задачу на шаги","Работает с API и состояниями","Пишет понятный и поддерживаемый код"],salary:"от 100–180 тыс.",pos:45},
+{id:"senior",lvl:"L3",title:"Senior",short:"Отвечает за качество и решения",expect:["Проектирует компоненты и архитектуру","Видит риски и предлагает альтернативы","Менторит и улучшает процессы"],salary:"от 200–300 тыс.",pos:72},
+{id:"lead",lvl:"L4",title:"Lead",short:"Отвечает за команду и систему",expect:["Принимает решения о стеке","Отвечает за качество и рост команды","Связывает продукт и разработку"],salary:"от 300 тыс.+",pos:92}
+];
+const ladder=$("#ladder"),careerCard=$("#careerCard"),salaryMarker=$("#salaryMarker"),salaryValue=$("#salaryValue");
+function renderRung(i){
+const r=rungs[i];
+$$("#ladder .rung").forEach((b,idx)=>b.classList.toggle("active",idx===i));
+careerCard.innerHTML=`<h3>${r.title} · ${r.lvl}</h3><p style="color:var(--muted);margin-top:6px">${r.short}</p><ul>${r.expect.map(e=>`<li>${e}</li>`).join("")}</ul>`;
+salaryMarker.style.left=r.pos+"%";
+salaryValue.textContent=r.salary;
+}
+rungs.forEach((r,i)=>{
+const b=document.createElement("button");
+b.className="rung";b.type="button";b.setAttribute("role","tab");
+b.innerHTML=`<span class="lvl">${r.lvl}</span><b>${r.title}</b><small>${r.short}</small>`;
+b.addEventListener("click",()=>renderRung(i));
+ladder.appendChild(b);
+});
+renderRung(0);
+
+/* ============ PORTFOLIO ============ */
+const ideas=[
+{title:"Дашборд привычек с фильтрами",desc:"Пользователь отмечает прогресс, фильтрует записи по неделям и видит статистику. Данные в localStorage, есть пустое состояние и подтверждение удаления.",stack:["HTML","CSS","JS","localStorage"]},
+{title:"Поиск по GitHub через API",desc:"Поле ввода логина, загрузка профиля через fetch, проверка response.ok, состояния загрузки и ошибки, карточка результата.",stack:["fetch","async/await","JSON","Ошибки"]},
+{title:"Доступное модальное окно",desc:"Кнопка открытия, role=dialog, aria-modal, закрытие по Escape и клику по фону, возврат фокуса, блокировка прокрутки.",stack:["A11y","ARIA","Фокус","CSS"]},
+{title:"Слайдер с клавиатурой",desc:"Лента слайдов через translate, кнопки с aria-label, управление стрелками, точки-индикаторы с подписями.",stack:["JS","transform","A11y","Клавиатура"]},
+{title:"Вкладки на чистом JS",desc:"Роли tablist/tab/tabpanel, aria-selected, переключение стрелками, активная панель и состояние в URL.",stack:["ARIA","JS","Состояние"]}
+];
+const ideaTitle=$("#ideaTitle"),ideaDesc=$("#ideaDesc"),ideaStack=$("#ideaStack");
+let ideaIdx=0;
+function renderIdea(){
+const it=ideas[ideaIdx];
+ideaTitle.textContent=it.title;
+ideaDesc.textContent=it.desc;
+ideaStack.innerHTML=it.stack.map(s=>`<span class="tag">${s}</span>`).join("");
+}
+$("#newIdea").addEventListener("click",()=>{
+ideaIdx=(ideaIdx+1)%ideas.length;renderIdea();showToast("Новая идея");
+});
+renderIdea();
+
+const checks=[
+["Семантика и доступность","Кнопки — кнопки, заголовки по уровням, aria там, где нужно."],
+["Состояния загрузки и ошибки","Пользователь видит, что происходит, даже если сеть упала."],
+["Адаптивность","Проверено на 360px и на широком экране."],
+["Клавиатура","Всё открывается и закрывается без мыши."],
+["README и демо","Понятно, что это, как запустить и что внутри."]
+];
+const portfolioChecklist=$("#portfolioChecklist");
+checks.forEach((c,i)=>{
+const id="pf"+i;
+const row=document.createElement("label");
+row.className="check";
+row.innerHTML=`<input type="checkbox" id="${id}"><span><b>${c[0]}</b><small>${c[1]}</small></span>`;
+row.querySelector("input").addEventListener("change",e=>{
+row.classList.toggle("done",e.target.checked);
+});
+portfolioChecklist.appendChild(row);
+});
+
+/* ============ QUIZ ============ */
+const quiz=[
+{q:"Какая технология отвечает за структуру страницы?",o:["CSS","HTML","JavaScript","JSON"],a:1,e:"HTML задаёт структуру и семантику документа."},
+{q:"Что строит браузер из HTML?",o:["CSSOM","DOM","JSON","API"],a:1,e:"Парсер читает теги и строит DOM-дерево."},
+{q:"Что такое CSSOM?",o:["Дерево стилей","Список запросов","Формат данных","Метод HTTP"],a:0,e:"CSS превращается в CSSOM — дерево правил стилей."},
+{q:"Какие свойства лучше анимировать для производительности?",o:["width и margin","transform и opacity","top и left","font-size"],a:1,e:"transform и opacity не вызывают дорогой пересчёт раскладки."},
+{q:"Что делает DNS?",o:["Шифрует трафик","Превращает имя домена в IP","Хранит HTML","Отправляет POST"],a:1,e:"DNS отвечает на вопрос «какой IP у этого имени?»."},
+{q:"Что означает код 200?",o:["Ошибка сервера","Не найдено","Успех","Перенаправление"],a:2,e:"200 OK — запрос успешно обработан."},
+{q:"Что делает HTTPS?",o:["Ускоряет сайт","Шифрует соединение","Сжимает картинки","Хранит куки"],a:1,e:"HTTPS шифрует соединение между браузером и сервером."},
+{q:"Что возвращает fetch?",o:["Строку","Промис","Массив","Число"],a:1,e:"fetch возвращает промис, который разрешается объектом Response."},
+{q:"Когда fetch отклоняет промис?",o:["При 404","При 500","При сетевом сбое","При любом ответе"],a:2,e:"fetch отклоняет промис только при сетевом сбое, не при 404/500."},
+{q:"Как проверить HTTP-ошибку после fetch?",o:["response.status === 0","response.ok","response.json()","response.text()"],a:1,e:"response.ok — индикатор успешного HTTP-статуса."},
+{q:"Что делает response.json()?",o:["Отправляет JSON","Читает тело и парсит JSON","Проверяет статус","Создаёт DOM"],a:1,e:"response.json() читает тело ответа и парсит JSON, возвращая промис."},
+{q:"Где можно использовать await?",o:["В любом месте","Только внутри async-функции","Только в цикле","Только в HTML"],a:1,e:"await работает только внутри функции с пометкой async."},
+{q:"Что вернёт JSON.parse('{\"a\":1}')?",o:["Строку","Объект","Число","Ошибку"],a:1,e:"JSON.parse превращает строку JSON в объект JavaScript."},
+{q:"Какие кавычки допустимы для ключей JSON?",o:["Одинарные","Двойные","Обратные","Любые"],a:1,e:"Ключи и строки в JSON — только в двойных кавычках."},
+{q:"Какой атрибут сообщает скринридеру, открыто ли меню?",o:["aria-hidden","aria-expanded","aria-label","aria-controls"],a:1,e:"aria-expanded хранит состояние открытости."},
+{q:"Какой атрибут связывает кнопку с элементом, которым она управляет?",o:["aria-label","aria-controls","aria-selected","role"],a:1,e:"aria-controls указывает на id управляемого элемента."},
+{q:"Что обязательно для модального окна?",o:["role=dialog и aria-modal","aria-expanded","role=tab","aria-selected"],a:0,e:"role=dialog + aria-modal=true + aria-labelledby — база доступной модалки."},
+{q:"Что должно происходить с фокусом при открытии модалки?",o:["Остаётся на месте","Переносится в окно и возвращается назад","Исчезает","Уходит в адресную строку"],a:1,e:"Фокус переносится в окно, а после закрытия возвращается."},
+{q:"Какой паттерн повторяется в интерактиве?",o:["Найти → снять состояние → поставить на выбранный","Создать → удалить → создать","Скрыть → показать → скрыть","Загрузить → сохранить → выйти"],a:0,e:"Классика: найти элементы, снять состояние со всех, поставить на выбранный."},
+{q:"Что нужно проверить, если компонент открывается мышью?",o:["Что он работает и с клавиатуры","Что он есть в JSON","Что он использует POST","Что он без CSS"],a:0,e:"Всё, что открывается мышью, должно открываться и закрываться с клавиатуры."}
+];
+let qIndex=0,qScore=0,qAnswered=false;
+const quizCard=$("#quizCard"),quizNext=$("#quizNext"),quizBar=$("#quizBar"),quizCount=$("#quizCount"),quizScore=$("#quizScore");
+function renderQuestion(){
+qAnswered=false;
+quizNext.disabled=true;
+const item=quiz[qIndex];
+quizCount.textContent=`Вопрос ${qIndex+1} / ${quiz.length}`;
+quizScore.textContent=`Верно: ${qScore}`;
+quizBar.style.width=(qIndex/quiz.length*100)+"%";
+quizCard.innerHTML=`<div class="quiz-q">${item.q}</div><div class="quiz-options"></div><div class="quiz-explain" id="quizExplain"></div>`;
+const opts=quizCard.querySelector(".quiz-options");
+item.o.forEach((text,i)=>{
+const b=document.createElement("button");
+b.className="quiz-opt";b.type="button";
+b.innerHTML=`<span class="key">${String.fromCharCode(65+i)}</span><span>${text}</span>`;
+b.addEventListener("click",()=>answer(i,b));
+opts.appendChild(b);
+});
+}
+function answer(i,btn){
+if(qAnswered)return;
+qAnswered=true;
+const item=quiz[qIndex];
+const opts=$$("#quizCard .quiz-opt");
+opts.forEach((b,idx)=>{
+b.disabled=true;
+if(idx===item.a)b.classList.add("correct");
+if(idx===i&&idx!==item.a)b.classList.add("wrong");
+});
+if(i===item.a)qScore++;
+quizScore.textContent=`Верно: ${qScore}`;
+const ex=$("#quizExplain");
+ex.textContent=item.e;ex.classList.add("show");
+quizNext.disabled=false;
+}
+quizNext.addEventListener("click",()=>{
+if(qIndex<quiz.length-1){
+qIndex++;renderQuestion();
+}else{
+finishQuiz();
+}
+});
+function finishQuiz(){
+quizBar.style.width="100%";
+quizCount.textContent=`Вопрос ${quiz.length} / ${quiz.length}`;
+const pct=Math.round(qScore/quiz.length*100);
+let msg,sub;
+if(pct>=90){msg="Отлично! Материал усвоен.";sub="Можно переходить к практике и портфолио."}
+else if(pct>=70){msg="Хорошо! Есть что подтянуть.";sub="Перечитайте темы, где были ошибки, и пройдите тест снова."}
+else{msg="Есть смысл повторить лекции.";sub="Начните с устройства веба, fetch и доступности."}
+quizCard.innerHTML=`<div class="quiz-result">
+<div class="result-score">${pct}%</div>
+<div class="result-msg">${msg}</div>
+<div class="result-sub">${sub} Правильных ответов: ${qScore} из ${quiz.length}.</div>
+<button class="btn btn-primary" id="quizAgain" type="button">Пройти ещё раз</button>
+</div>`;
+quizNext.disabled=true;
+$("#quizAgain").addEventListener("click",restartQuiz);
+}
+function restartQuiz(){
+qIndex=0;qScore=0;renderQuestion();
+}
+$("#quizRestart").addEventListener("click",restartQuiz);
+renderQuestion();
+
+/* ============ PLAN ============ */
+const plan=[
+{n:"1",title:"Фаза 1",sub:"Дни 1–30 · база",tasks:[
+["Закрепить HTML и CSS: семантика, Flexbox/Grid",""],
+["Практика JavaScript: события, DOM, массивы и объекты",""],
+["Сделать 2 компонента: меню-бургер и вкладки",""],
+["Разобраться с Git: commit, push, ветки",""]
+]},
+{n:"2",title:"Фаза 2",sub:"Дни 31–60 · данные и компоненты",tasks:[
+["fetch + API: загрузка, ошибки, состояния",""],
+["JSON: parse/stringify, работа с вложенными данными",""],
+["Модалка и слайдер с доступностью",""],
+["Собрать проект с API и README",""]
+]},
+{n:"3",title:"Фаза 3",sub:"Дни 61–90 · портфолио и собеседование",tasks:[
+["Довести 2 проекта до живого демо",""],
+["Пройти чек-лист доступности и клавиатуры",""],
+["Подготовить рассказ о проектах и решениях",""],
+["Потренироваться на вопросах теста",""]
+]}
+];
+const planGrid=$("#planGrid"),planBar=$("#planBar"),planPct=$("#planPct"),planDone=$("#planDone"),planTotal=$("#planTotal");
+const planState=JSON.parse(localStorage.getItem("webPlan")||"{}");
+function savePlan(){localStorage.setItem("webPlan",JSON.stringify(planState));}
+function renderPlan(){
+planGrid.innerHTML="";
+let total=0,done=0;
+plan.forEach((p,pi)=>{
+const wrap=document.createElement("div");
+wrap.className="phase";
+wrap.innerHTML=`<div class="phase-head"><span class="phase-num">${p.n}</span><span><b>${p.title}</b><small>${p.sub}</small></span></div>`;
+p.tasks.forEach((t,ti)=>{
+total++;
+const id="p"+pi+"_"+ti;
+const isDone=!!planState[id];
+if(isDone)done++;
+const row=document.createElement("label");
+row.className="task"+(isDone?" done":"");
+row.innerHTML=`<input type="checkbox" id="${id}" ${isDone?"checked":""}><label for="${id}">${t[0]}</label>`;
+row.querySelector("input").addEventListener("change",e=>{
+planState[id]=e.target.checked;
+row.classList.toggle("done",e.target.checked);
+savePlan();updateSummary();
+});
+wrap.appendChild(row);
+});
+planGrid.appendChild(wrap);
+});
+planTotal.textContent=total;
+planDone.textContent=done;
+function updateSummary(){
+let total=0,done=0;
+plan.forEach((p,pi)=>p.tasks.forEach((t,ti)=>{
+total++;
+if(planState["p"+pi+"_"+ti])done++;
+}));
+planDone.textContent=done;
+const pct=total?Math.round(done/total*100):0;
+planPct.textContent=pct+"%";
+planBar.style.width=pct+"%";
+}
+updateSummary();
+}
+renderPlan();
+$("#planReset").addEventListener("click",()=>{
+Object.keys(planState).forEach(k=>delete planState[k]);
+savePlan();renderPlan();showToast("План сброшен");
+});
+$("#planExport").addEventListener("click",()=>{
+const lines=["План развития на 90 дней",""];
+plan.forEach((p,pi)=>{
+lines.push(p.title+" — "+p.sub);
+p.tasks.forEach((t,ti)=>{
+const id="p"+pi+"_"+ti;
+lines.push((planState[id]?"[x] ":"[ ] ")+t[0]);
+});
+lines.push("");
+});
+const blob=new Blob([lines.join("\n")],{type:"text/plain;charset=utf-8"});
+const a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="plan-90-days.txt";
+a.click();
+URL.revokeObjectURL(a.href);
+showToast("План скачан");
+});
+
+})();
+</script>
+</body>
+</html>
