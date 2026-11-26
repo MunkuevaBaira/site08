@@ -138,7 +138,8 @@ h3{font-size:1.18rem;font-weight:750}
 .meta-box b{font-size:.92rem;margin-top:3px;display:block}
 
 .lecture-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
-.lecture-card{background:rgba(16,26,49,.72);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px}
+.lecture-card{background:rgba(16,26,49,.72);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;cursor:pointer;transition:border-color .3s ease,box-shadow .3s ease}
+.lecture-card:hover{border-color:var(--line2);box-shadow:0 4px 20px rgba(0,229,255,.08)}
 .lecture-card h3{margin:12px 0 8px;font-size:1.1rem}
 .lecture-card p{color:var(--muted);font-size:.88rem}
 .lecture-card ul{list-style:none;display:flex;flex-direction:column;gap:7px;margin-top:12px}
@@ -146,6 +147,20 @@ h3{font-size:1.18rem;font-weight:750}
 .lecture-card li::before{content:"▸";color:var(--cyan);flex:0 0 auto}
 .lecture-date{font-family:var(--mono);font-size:.72rem;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
 .formula{background:#060a14;border:1px solid var(--line);border-radius:var(--r-sm);padding:14px;font-family:var(--mono);font-size:.78rem;color:var(--lime);margin-top:12px;overflow:auto;white-space:pre-wrap}
+
+/* Стили для раскрывающихся лекций */
+.lecture-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.lecture-toggle{background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.3);color:var(--cyan);width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:.7rem;transition:all .3s ease;cursor:pointer;flex:0 0 auto}
+.lecture-toggle:hover{background:rgba(0,229,255,.2);border-color:var(--cyan)}
+.lecture-arrow{display:inline-block;transition:transform .3s ease}
+.lecture-card.open .lecture-arrow{transform:rotate(180deg)}
+.lecture-full{max-height:0;overflow:hidden;margin-top:0;padding-top:0;border-top:1px solid transparent;transition:max-height .5s cubic-bezier(.4,0,.2,1),padding-top .3s ease,border-color .3s ease}
+.lecture-card.open .lecture-full{padding-top:16px;border-top-color:var(--line)}
+.lecture-full p{color:var(--muted);font-size:.88rem;margin-bottom:12px;line-height:1.7}
+.lecture-full p strong{color:var(--text)}
+.lecture-full code{background:rgba(0,229,255,.1);padding:2px 6px;border-radius:4px;font-size:.82rem;color:var(--cyan)}
+.lecture-full pre{background:#060a14;border:1px solid var(--line);border-radius:8px;padding:14px;overflow-x:auto;margin:12px 0}
+.lecture-full pre code{background:none;padding:0;color:#cfe0ff}
 
 .lab{display:grid;grid-template-columns:1.05fr .95fr;gap:22px;align-items:start}
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
@@ -720,20 +735,52 @@ renderSpec("frontend");
 
 /* ============ LECTURES ============ */
 const lectures=[
-{date:"30.10.2026",title:"Как устроена веб-разработка",desc:"Фронтенд, бэкенд и инфраструктура; сайт vs веб-приложение; путь запроса и рендеринг.",points:["DNS → IP, HTTP-запрос, ответ","DOM + CSSOM → render → paint","Анимируем transform и opacity"],formula:"HTML + CSS + JS → DOM + CSSOM → render → layout → paint"},
-{date:"09.10.2026",title:"Публикация сайта",desc:"URL, хостинг, домены и DNS, HTTPS и коды состояния; публикация и Git.",points:["DNS отвечает «какой IP у имени?»","HTTPS шифрует соединение","Git помогает обновлять сайт"],formula:"URL = протокол + домен + путь + параметры"},
-{date:"16.10.2026",title:"Данные с сервера: fetch, API, JSON",desc:"Запрос и ответ, методы HTTP, JSON, промисы и async/await.",points:["fetch возвращает промис","response.json() тоже асинхронный","await — только внутри async"],formula:"const data = await response.json();"},
-{date:"23.10.2026",title:"Обработка ошибок",desc:"fetch не считает 404 ошибкой; сетевые и HTTP-ошибки; шаблон запроса и POST.",points:["Проверка response.ok обязательна","try/catch для сетевых сбоев","disabled и «Загружаю…»"],formula:"if (!response.ok) throw new Error(response.status);"},
-{date:"06.11.2026",title:"Компоненты интерфейса",desc:"Меню-бургер, модалка, слайдер и вкладки. Переиспользование и доступность.",points:["aria-expanded, aria-controls, aria-label","role=dialog, aria-modal, возврат фокуса","Всё с мышью работает и с клавиатуры"],formula:"клик → снять состояние → поставить на выбранный"}
+{date:"30.10.2026",title:"Как устроена веб-разработка",desc:"Фронтенд, бэкенд и инфраструктура; сайт vs веб-приложение; путь запроса и рендеринг.",points:["DNS → IP, HTTP-запрос, ответ","DOM + CSSOM → render → paint","Анимируем transform и opacity"],formula:"HTML + CSS + JS → DOM + CSSOM → render → layout → paint", fullText:"<p><strong>Веб-разработка</strong> делится на три большие части: <b>фронтенд</b> (то, что видит пользователь), <b>бэкенд</b> (серверная логика и базы данных) и <b>инфраструктура</b> (хостинг, домены, CI/CD).</p><p><b>Сайт</b> — это набор статических страниц. <b>Веб-приложение</b> — это интерактивная система с состоянием, которая общается с сервером через API.</p><p><b>Путь запроса:</b> Вы вводите адрес → браузер спрашивает DNS «какой IP?» → отправляет HTTP-запрос → сервер отвечает HTML → браузер строит DOM и CSSOM → объединяет в render-дерево → вычисляет layout → отрисовывает пиксели (paint).</p><p><b>Анимации:</b> для плавности анимируйте только <code>transform</code> и <code>opacity</code>. Свойства вроде <code>width</code> или <code>margin</code> вызывают пересчёт раскладки (reflow) и тормозят.</p>"},
+{date:"09.10.2026",title:"Публикация сайта",desc:"URL, хостинг, домены и DNS, HTTPS и коды состояния; публикация и Git.",points:["DNS отвечает «какой IP у имени?»","HTTPS шифрует соединение","Git помогает обновлять сайт"],formula:"URL = протокол + домен + путь + параметры", fullText:"<p><b>URL</b> состоит из протокола (<code>https://</code>), домена (<code>example.com</code>), пути (<code>/about</code>) и параметров (<code>?id=1</code>).</p><p><b>Хостинг</b> — это сервер, где лежат файлы. <b>Домен</b> — это имя, которое вы покупаете у регистратора.</p><p><b>DNS</b> — это телефонная книга интернета. Она превращает домен в IP-адрес сервера. Когда вы меняете хостинг, вы меняете DNS-записи (A-запись), чтобы домен указывал на новый IP.</p><p><b>HTTPS</b> шифрует соединение. Без него браузеры помечают сайт как «небезопасный». SSL-сертификат можно получить бесплатно (например, через Let's Encrypt).</p><p><b>Коды состояния:</b> 200 — успех, 301/302 — редирект, 404 — не найдено, 500 — ошибка сервера.</p><p><b>Git</b> помогает версионировать код и публиковать обновления через пуш в удалённый репозиторий (GitHub, GitLab).</p>"},
+{date:"16.10.2026",title:"Данные с сервера: fetch, API, JSON",desc:"Запрос и ответ, методы HTTP, JSON, промисы и async/await.",points:["fetch возвращает промис","response.json() тоже асинхронный","await — только внутри async"],formula:"const data = await response.json();", fullText:"<p><b>fetch</b> — это встроенная функция для отправки HTTP-запросов. Она возвращает <b>промис</b>, который разрешается объектом <code>Response</code>.</p><p><b>Методы HTTP:</b> <code>GET</code> — получить данные, <code>POST</code> — отправить, <code>PUT/PATCH</code> — обновить, <code>DELETE</code> — удалить.</p><p><b>JSON</b> — это текстовый формат данных. Ключи и строки в нём должны быть в двойных кавычках. <code>JSON.parse()</code> превращает строку в объект, а <code>JSON.stringify()</code> — наоборот.</p><p><b>Промисы и async/await:</b> <code>fetch()</code> возвращает промис. <code>response.json()</code> тоже асинхронный. <code>await</code> можно использовать только внутри функции, помеченной <code>async</code>.</p><p><b>Пример:</b></p><pre><code>async function loadData() {\n  const response = await fetch('https://api.example.com/data');\n  const data = await response.json();\n  console.log(data);\n}</code></pre>"},
+{date:"23.10.2026",title:"Обработка ошибок",desc:"fetch не считает 404 ошибкой; сетевые и HTTP-ошибки; шаблон запроса и POST.",points:["Проверка response.ok обязательна","try/catch для сетевых сбоев","disabled и «Загружаю…»"],formula:"if (!response.ok) throw new Error(response.status);", fullText:"<p><b>Важно:</b> <code>fetch</code> не отклоняет промис при кодах 404 или 500. Он считает ошибкой только <b>сетевой сбой</b> (например, нет интернета).</p><p>Поэтому после получения ответа <b>обязательно</b> проверяйте <code>response.ok</code>:</p><pre><code>const response = await fetch(url);\nif (!response.ok) {\n  throw new Error(`HTTP error: ${response.status}`);\n}</code></pre><p><b>try/catch</b> нужен для перехвата сетевых ошибок и ошибок парсинга.</p><p><b>UX при загрузке:</b> блокируйте кнопку (<code>disabled</code>), показывайте текст «Загружаю…», скрывайте спиннер после завершения. При ошибке показывайте понятное сообщение и кнопку «Повторить».</p><p><b>POST-запрос:</b> передавайте метод, заголовки и тело:</p><pre><code>fetch(url, {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify(data)\n});</code></pre>"},
+{date:"06.11.2026",title:"Компоненты интерфейса",desc:"Меню-бургер, модалка, слайдер и вкладки. Переиспользование и доступность.",points:["aria-expanded, aria-controls, aria-label","role=dialog, aria-modal, возврат фокуса","Всё с мышью работает и с клавиатуры"],formula:"клик → снять состояние → поставить на выбранный", fullText:"<p><b>Компонент</b> — это переиспользуемый блок интерфейса с разметкой, стилями и логикой.</p><p><b>Меню-бургер:</b> кнопка с <code>aria-expanded</code> (открыто/закрыто), <code>aria-controls</code> (id управляемого меню) и <code>aria-label</code>. Состояние хранится в атрибуте, чтобы скринридер его озвучивал.</p><p><b>Модальное окно:</b> <code>role=\"dialog\"</code>, <code>aria-modal=\"true\"</code>, <code>aria-labelledby</code>. При открытии фокус переносится в окно, фон блокируется. Закрытие по Escape и клику по фону. После закрытия фокус возвращается на кнопку открытия.</p><p><b>Слайдер:</b> лента слайдов сдвигается через <code>transform: translateX(-100%)</code>. <code>overflow: hidden</code> прячет остальные слайды. Кнопки навигации должны иметь <code>aria-label</code>.</p><p><b>Вкладки:</b> роли <code>tablist</code>, <code>tab</code>, <code>tabpanel</code>. Активный таб помечается <code>aria-selected=\"true\"</code>. Переключение стрелками клавиатуры.</p><p><b>Главное правило:</b> всё, что открывается мышью, должно открываться и с клавиатуры (Tab, Enter, Escape, стрелки).</p>"}
 ];
-$("#lectureGrid").innerHTML=lectures.map(l=>`
-<div class="lecture-card">
-<span class="lecture-date">${l.date}</span>
-<h3>${l.title}</h3>
-<p>${l.desc}</p>
-<ul>${l.points.map(p=>`<li>${p}</li>`).join("")}</ul>
-<div class="formula">${l.formula}</div>
+
+$("#lectureGrid").innerHTML=lectures.map((l, idx)=>`
+<div class="lecture-card" data-idx="${idx}">
+  <div class="lecture-header">
+    <span class="lecture-date">${l.date}</span>
+    <button class="lecture-toggle" aria-label="Раскрыть лекцию" aria-expanded="false">
+      <span class="lecture-arrow">▼</span>
+    </button>
+  </div>
+  <h3>${l.title}</h3>
+  <p>${l.desc}</p>
+  <ul>${l.points.map(p=>`<li>${p}</li>`).join("")}</ul>
+  <div class="formula">${l.formula}</div>
+  <div class="lecture-full">
+    ${l.fullText}
+  </div>
 </div>`).join("");
+
+// Обработчик клика для раскрытия лекций
+document.querySelectorAll('.lecture-card').forEach(card => {
+  const toggleBtn = card.querySelector('.lecture-toggle');
+  const fullText = card.querySelector('.lecture-full');
+  
+  function toggleLecture() {
+    const isOpen = card.classList.toggle('open');
+    toggleBtn.setAttribute('aria-expanded', isOpen);
+    fullText.style.maxHeight = isOpen ? fullText.scrollHeight + 'px' : '0';
+  }
+
+  toggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleLecture();
+  });
+  
+  card.addEventListener('click', (e) => {
+    if (!e.target.closest('.lecture-toggle')) {
+      toggleLecture();
+    }
+  });
+});
 
 /* ============ COMPONENT CARDS ============ */
 $("#componentCards").innerHTML=[
